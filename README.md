@@ -1,7 +1,4 @@
-# TRON Gas-Free USDT Wallet — Starter (Next.js + TronWeb)
+# TRON Gas-Free USDT — Embedded Wallet (no TronLink)
 
-- Contrato: `contracts/GaslessUSDTForwarder.sol`
-- API: `/api/delegate` (delegar Energy), `/api/relay` (llama metaTransfer)
-- UI: conectar TronLink, activar approve sin TRX, enviar gas-free
-
-Configura variables en Vercel usando `.env.example` como guía.
+Genera una llave local cifrada en el navegador y usa TronWeb para firmar.
+Backend delega Energy y reenvía metaTransfer.

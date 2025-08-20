@@ -1,5 +1,5 @@
 {
-  "name": "tron-gasfree-wallet-starter",
+  "name": "tron-gasfree-wallet-embedded",
   "version": "0.1.0",
   "private": true,
   "scripts": {
