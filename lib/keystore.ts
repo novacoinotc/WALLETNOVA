@@ -28,3 +28,47 @@ export async function savePKDirect(password:string, privateKeyHex:string, TronWe
   // Reutiliza el flujo de savePrivateKey pero con PK determinada
   return savePrivateKey(password, privateKeyHex, TronWeb);
 }
+
+
+/** Guarda la frase semilla cifrada, en un slot aparte */
+export async function saveMnemonic(password: string, mnemonic: string): Promise<void> {
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 150000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt','decrypt']
+  );
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(mnemonic));
+  const payload = {
+    iv: btoa(String.fromCharCode(...iv)),
+    salt: btoa(String.fromCharCode(...salt)),
+    ciphertext: btoa(String.fromCharCode(...new Uint8Array(ct)))
+  };
+  localStorage.setItem('tron_seed_v1', JSON.stringify(payload));
+}
+
+export async function unlockMnemonic(password: string): Promise<string> {
+  const raw = localStorage.getItem('tron_seed_v1');
+  if (!raw) throw new Error('No hay semilla guardada');
+  const data = JSON.parse(raw);
+  const enc = new TextEncoder();
+  const salt = Uint8Array.from(atob(data.salt), c => c.charCodeAt(0));
+  const iv = Uint8Array.from(atob(data.iv), c => c.charCodeAt(0));
+  const ct = Uint8Array.from(atob(data.ciphertext), c => c.charCodeAt(0));
+
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 150000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt','decrypt']
+  );
+  const ptBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+  return new TextDecoder().decode(ptBuf);
+}
