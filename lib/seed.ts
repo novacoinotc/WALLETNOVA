@@ -8,3 +8,6 @@ export function deriveTronPrivateKeyFromSeed(mnemonic: string): string {
   const child = hd.derivePath("m/44'/195'/0'/0/0");
   return child.privateKey.replace(/^0x/i,'');
 }
+export function isValidMnemonic(mn: string): boolean {
+  return utils.isValidMnemonic(mn);
+}

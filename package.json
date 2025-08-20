@@ -1,5 +1,5 @@
 {
-  "name": "tron-gasfree-seedbuttons",
+  "name": "tron-gasfree-completo",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -11,9 +11,9 @@
     "next": "14.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "tronweb": "^5.3.0",
-    "ethers": "^5.7.2",
-    "@noble/secp256k1": "^1.7.1"
+    "tronweb": "5.3.2",
+    "@noble/secp256k1": "^1.7.1",
+    "ethers": "^5.7.2"
   },
   "devDependencies": {
     "@types/node": "20.11.30",
