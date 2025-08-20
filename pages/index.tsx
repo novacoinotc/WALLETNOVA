@@ -6,8 +6,8 @@ import usdtAbi from '../lib/abi/usdt.json';
 const USDT=process.env.NEXT_PUBLIC_USDT_ADDRESS||process.env.USDT_ADDRESS;
 const FORWARDER=process.env.NEXT_PUBLIC_FORWARDER_ADDRESS||process.env.FORWARDER_ADDRESS;
 const FLAT_FEE=process.env.NEXT_PUBLIC_FLAT_FEE_USDT||process.env.FLAT_FEE_USDT||'2000000';
-const FULLNODE=process.env.NEXT_PUBLIC_TRON_FULLNODE||'';
-const SOLNODE=process.env.NEXT_PUBLIC_TRON_SOLIDITYNODE||'';
+const FULLNODE=FULLNODE_LS;
+const SOLNODE=SOLNODE_LS;
 
 export default function Home(){
  const [status,setStatus]=useState('Listo.');
@@ -25,11 +25,11 @@ export default function Home(){
 
  function toUSDTUnits(h:string){ const [i,d='']=h.split('.'); const dec=(d+'000000').slice(0,6); return BigInt((i||'0'))*10n**6n+BigInt(dec||'0'); }
 
- async function readAllowance(){ if(!tronWeb||!USDT||!FORWARDER) return; try{ const usdt=await tronWeb.contract(usdtAbi,USDT); const v=await usdt.allowance(address,FORWARDER).call(); setAllowance(v.toString()); }catch(e:any){ setStatus('Error leyendo allowance: '+(e?.message||e)); } }
+ async function readAllowance(){ if(!tronWeb||!USDT||!FORWARDER) return; try{ const usdt=await tronWeb.contract(usdtAbi,USDT_LS); const v=await usdt.allowance(address,FORWARDER_LS).call(); setAllowance(v.toString()); }catch(e:any){ setStatus('Error leyendo allowance: '+(e?.message||e)); } }
 
  async function activate(){ if(!tronWeb||!USDT||!FORWARDER) return setStatus('Falta configurar USDT/FORWARDER o nodos');
   try{ setStatus('Delegando Energy...'); const r=await fetch('/api/delegate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userBase58:address})}).then(r=>r.json()); if(!r.ok) throw new Error(r.error||'delegate failed');
-   setStatus('Firmando approve...'); const usdt=await tronWeb.contract(usdtAbi,USDT); const max='1000000000000000'; const txid=await usdt.approve(FORWARDER,max).send({feeLimit:100_000_000}); setStatus('Approve enviado: '+txid); setTimeout(readAllowance,2000);
+   setStatus('Firmando approve...'); const usdt=await tronWeb.contract(usdtAbi,USDT_LS); const max='1000000000000000'; const txid=await usdt.approve(FORWARDER_LS,max).send({feeLimit:100_000_000}); setStatus('Approve enviado: '+txid); setTimeout(readAllowance,2000);
   }catch(e:any){ setStatus('Activación falló: '+(e?.message||e)); } }
 
  async function signAndRelay(){ if(!tronWeb) return setStatus('TronWeb no listo'); if(!to||!amount) return setStatus('Captura destino y monto');
@@ -55,7 +55,20 @@ export default function Home(){
   <div style={{marginTop:16,fontSize:14}}>
     <div><b>Wallet:</b> {address||'no creada'}</div>
     <div><b>Estado:</b> {locked ? 'bloqueada' : (address ? 'desbloqueada' : '—')}</div>
-    <div><b>Allowance actual:</b> {allowance}</div>
+    <div><b>Allowance actual:
+  </div>
+
+  <details style={{margin:'16px 0'}}>
+    <summary><b>Config rápida (guardar en el navegador)</b></summary>
+    <div style={{display:'grid',gap:8,marginTop:8}}>
+      <input placeholder="USDT_ADDRESS (base58)" onChange={e=>localStorage.setItem('cfg_usdt', e.target.value)} style={{padding:8,borderRadius:8,border:'1px solid #ddd'}}/>
+      <input placeholder="FORWARDER_ADDRESS (base58)" onChange={e=>localStorage.setItem('cfg_forwarder', e.target.value)} style={{padding:8,borderRadius:8,border:'1px solid #ddd'}}/>
+      <small>Consejo: pega aquí tus direcciones para no tocar variables de entorno. Se guardan en <code>localStorage</code>.</small>
+    </div>
+  </details>
+
+  <div style={{ marginTop: 16, fontSize: 14 }}>
+</b> {allowance}</div>
   </div>
   <hr style={{margin:'24px 0'}}/>
   <div style={{display:'grid',gap:12}}>
