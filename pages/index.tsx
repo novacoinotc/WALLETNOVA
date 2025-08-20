@@ -67,7 +67,19 @@ export default function Home(){
     }catch(e:any){ setMsg('No se pudo activar: '+(e?.message||e)); }
   }
 
-  function toUSDT(h:string){ const [i,d='']=h.split('.'); const dec=(d+'000000').slice(0,6); return (BigInt(i||'0')*10n**6n)+BigInt(dec||'0'); }
+  function toUSDT(h:string){ const [i,d='']=h.split('.'); const dec=(d+'000000').slice(0,6); 
+  async function copiarSeed(){
+    try{
+      const p = prompt('Contraseña de tu wallet:') || '';
+      let words = '';
+      try { words = await unlockMnemonic(p); }
+      catch { words = await unlockMnemonic('TEMP_SEED_PASS'); }
+      await navigator.clipboard.writeText(words);
+      setMsg('Frase semilla copiada al portapapeles.');
+    }catch(e:any){ setMsg('No se pudo copiar la semilla: '+(e?.message||e)); }
+  }
+
+  return (BigInt(i||'0')*10n**6n)+BigInt(dec||'0'); }
 
   async function sendGasless(){
     if(!tronWeb||!cfg) return setMsg('No listo.');
@@ -111,6 +123,18 @@ export default function Home(){
       if (!ok) return;
       alert('Tu clave privada:\n' + priv + '\n\n¡NO la compartas con nadie!');
     }catch{ setMsg('Contraseña incorrecta'); }
+  }
+
+  
+  async function copiarSeed(){
+    try{
+      const p = prompt('Contraseña de tu wallet:') || '';
+      let words = '';
+      try { words = await unlockMnemonic(p); }
+      catch { words = await unlockMnemonic('TEMP_SEED_PASS'); }
+      await navigator.clipboard.writeText(words);
+      setMsg('Frase semilla copiada al portapapeles.');
+    }catch(e:any){ setMsg('No se pudo copiar la semilla: '+(e?.message||e)); }
   }
 
   return (
