@@ -1,15 +1,26 @@
-# TRON Gas-Free Wallet — Auto (sin TronLink)
+# TRON Gas-Free Wallet — Súper Simple
 
-Objetivo: que tus clientes **reciban y envíen USDT** sin TRX y pagando una **comisión fija en USDT**, con todo automatizado.
+## Qué debes hacer tú
+1. Subir a Vercel este proyecto.
+2. En **Environment Variables** agrega SOLO:
+   - `RELAYER_PRIVATE_KEY` = tu clave privada (wallet que paga el TRX).
+   - `FORWARDER_ADDRESS` = contrato forwarder que cobra la comisión.
+   - (Opcional) `FLAT_FEE_USDT`, `TRON_FULLNODE`, `TRON_SOLIDITYNODE`.
 
-## ¿Cómo se usa?
-1. Sube este ZIP a Vercel.
-2. En **Environment Variables** pon:
-   - `RELAYER_PRIVATE_KEY` = PK de tu relayer (con TRX staked)
-   - `USDT_ADDRESS` = contrato USDT (por defecto puse el oficial mainnet)
-   - `FORWARDER_ADDRESS` = dirección de tu contrato forwarder (incluido en /contracts para desplegar)
-   - (Opcional) `FLAT_FEE_USDT`, `DELEGATE_ENERGY_AMOUNT` , `TRON_FULLNODE`, `TRON_SOLIDITYNODE`
-3. Abre la app. El front **genera la wallet del cliente**, la **registra** en tu backend, y si hace falta **auto-activa** (approve sin TRX).
-4. El cliente solo elige destino y monto → **Enviar USDT (Gas-Free)**.
+> USDT oficial en TRON ya está preconfigurado en el backend.
 
-Seguridad mínima incluida (no custodial): la PK se guarda **cifrada** en el navegador con contraseña.
+## Flujo del cliente
+- La app crea su wallet (cifrada con contraseña en su navegador).
+- El backend patrocina ENERGY y aprueba USDT automáticamente.
+- El cliente envía USDT y tu sistema cobra una comisión fija.
+
+
+## ¿A dónde van los USDT cobrados?
+- Van a **`feeVault`**, la dirección que pones al **desplegar el contrato** `GaslessUSDTForwarderSimple.sol`.
+- Si luego quieres cambiarla, usa la función `setFeeVault(newVault)` (llamada on-chain desde tu cuenta).
+- La comisión fija se define en `flatFee` (puedes cambiarla con `setFee`).
+
+## Copia de seguridad de la wallet (cliente)
+En la pantalla verás:
+- **Mostrar clave privada** (con confirmación)
+- **Descargar respaldo cifrado (.json)** para guardar/recuperar la wallet más adelante.

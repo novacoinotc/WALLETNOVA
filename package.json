@@ -1,6 +1,6 @@
 {
-  "name": "tron-gasfree-wallet-auto",
-  "version": "0.2.0",
+  "name": "tron-gasfree-wallet-super-simple",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
