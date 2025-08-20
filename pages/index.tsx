@@ -12,6 +12,7 @@ export default function Home(){
   const [address,setAddress]=useState<string>('');
   const [locked,setLocked]=useState<boolean>(true);
   const [allowance,setAllowance]=useState<string>('0');
+  const [balance,setBalance]=useState<string>('0.00');
   const [to,setTo]=useState<string>(''); const [amount,setAmount]=useState<string>('');
   const [pk,setPk]=useState<string>('');
 
@@ -47,6 +48,7 @@ export default function Home(){
     if(!c.forwarder){ setMsg('⚠️ Falta FORWARDER_ADDRESS en Vercel'); return; }
     try{
       const usdt=await tw.contract(usdtAbi, c.usdt);
+      const balRaw=await usdt.balanceOf(addr).call(); try{ setBalance(fromUSDT(BigInt(balRaw.toString())));}catch{ setBalance('0.00'); }
       const cur=await usdt.allowance(addr, c.forwarder).call(); setAllowance(cur.toString());
       if(BigInt(cur.toString())===0n){
         setMsg('Activando: patrocinio + approve...');
@@ -58,6 +60,7 @@ export default function Home(){
   }
 
   function toUSDT(h:string){ const [i,d='']=h.split('.'); const dec=(d+'000000').slice(0,6); return (BigInt(i||'0')*10n**6n)+BigInt(dec||'0'); }
+  function fromUSDT(v:bigint){ const i=v/10n**6n; const d=(v% (10n**6n)).toString().padStart(6,'0').replace(/0+$/,''); return d? `${i}.${d}`: i.toString(); }
 
   async function sendGasless(){
     if(!tronWeb||!cfg) return setMsg('No listo.');
@@ -72,6 +75,7 @@ export default function Home(){
       const sigHex=await tronWeb.trx.sign(digest,pk); const sig=sigHex.replace(/^0x/i,''); const r='0x'+sig.slice(0,64); const s='0x'+sig.slice(64,128); let v=parseInt(sig.slice(128,130),16); if(v<27)v+=27;
       setMsg('Enviando...'); const resp=await fetch('/api/relay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from,to,amount:amt.toString(),deadline:dl.toString(),v,r,s})}).then(r=>r.json());
       if(!resp.ok) throw new Error(resp.error||'relay failed'); setMsg('Listo. TXID: '+resp.txid);
+      try{ const usdt=await tronWeb.contract(usdtAbi, cfg.usdt); const bal=await usdt.balanceOf(address).call(); setBalance(fromUSDT(BigInt(bal.toString())));}catch{}
     }catch(e:any){ setMsg('Fallo envío: '+(e?.message||e)); }
   }
 
@@ -118,6 +122,7 @@ export default function Home(){
     <div style={{marginTop:16,fontSize:14}}>
       <div><b>Wallet:</b> {address || '—'}</div>
       <div><b>Estado:</b> {locked ? 'bloqueada' : 'desbloqueada'}</div>
+      <div><b>Saldo USDT:</b> {balance}</div>
       <div><b>Allowance actual:</b> {allowance}</div>
     </div>
 
