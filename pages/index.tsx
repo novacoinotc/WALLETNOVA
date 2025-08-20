@@ -13,7 +13,6 @@ export default function Home(){
   const [allowance,setAllowance]=useState<string>('0');
   const [to,setTo]=useState<string>(''); const [amount,setAmount]=useState<string>('');
 
-  // Cargar config + wallet
   useEffect(()=>{(async()=>{
     try{
       const c=await fetch('/api/config').then(r=>r.json()); setCfg(c);
@@ -72,38 +71,55 @@ export default function Home(){
   }
   function borrar(){ clearWallet(); setAddress(''); setPk(''); setLocked(true); setAllowance('0'); setMsg('Wallet borrada.'); }
 
-  return (<div style={{maxWidth:760,margin:'40px auto',padding:24,fontFamily:'ui-sans-serif, system-ui'}}>
-    <h1 style={{fontSize:28,fontWeight:700}}>TRON Wallet Gas-Free — Súper Simple</h1>
-    <p style={{opacity:0.8}}>Tus clientes envían USDT sin TRX. Tu sistema paga el gas y cobra comisión fija.</p>
+  function descargarRespaldo(){
+    try{
+      const raw = localStorage.getItem('tron_simple_keystore_v1');
+      if(!raw){ setMsg('No hay respaldo guardado.'); return; }
+      const blob = new Blob([raw], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'tron-wallet-respaldo.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }catch(e:any){ setMsg('No se pudo descargar: '+(e?.message||e)); }
+  }
+  async function mostrarPK(){
+    try{
+      const p = prompt('Escribe tu contraseña para ver la clave privada:') || '';
+      const priv = await unlock(p);
+      const ok = confirm('Vas a ver tu CLAVE PRIVADA en pantalla. ¿Seguro?');
+      if (!ok) return;
+      alert('Tu clave privada:\n' + priv + '\n\n¡NO la compartas con nadie!');
+    }catch{ setMsg('Contraseña incorrecta'); }
+  }
 
-    <div style={{display:'flex',gap:12,marginTop:16,flexWrap:'wrap'}}>
-      {locked && <button onClick={desbloquear} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Desbloquear</button>}
-      <button onClick={borrar} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Borrar Wallet</button>
+  return (
+    <div style={{maxWidth:760,margin:'40px auto',padding:24,fontFamily:'ui-sans-serif, system-ui'}}>
+      <h1 style={{fontSize:28,fontWeight:700}}>TRON Wallet Gas-Free — Súper Simple</h1>
+      <p style={{opacity:0.8}}>Tus clientes envían USDT sin TRX. Tu sistema paga el gas y cobra comisión fija.</p>
+
+      <div style={{display:'flex',gap:12,marginTop:16,flexWrap:'wrap'}}>
+        {locked && <button onClick={desbloquear} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Desbloquear</button>}
+        <button onClick={borrar} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Borrar Wallet</button>
+        <button onClick={mostrarPK} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Mostrar clave privada</button>
+        <button onClick={descargarRespaldo} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Descargar respaldo (.json)</button>
+      </div>
+
+      <div style={{marginTop:16,fontSize:14}}>
+        <div><b>Wallet:</b> {address || 'no creada'}</div>
+        <div><b>Estado:</b> {locked ? 'bloqueada' : (address ? 'desbloqueada' : '—')}</div>
+        <div><b>Allowance actual:</b> {allowance}</div>
+      </div>
+
+      <hr style={{margin:'24px 0'}}/>
+
+      <div style={{display:'grid',gap:12}}>
+        <input placeholder="Destino (base58)" value={to} onChange={e=>setTo(e.target.value)} style={{padding:10,borderRadius:10,border:'1px solid #ddd'}}/>
+        <input placeholder="Monto USDT (ej. 25.50)" value={amount} onChange={e=>setAmount(e.target.value)} style={{padding:10,borderRadius:10,border:'1px solid #ddd'}}/>
+        <button onClick={sendGasless} disabled={!address||locked} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Enviar USDT (Gas-Free)</button>
+      </div>
+
+      <pre style={{background:'#0f172a',color:'#e2e8f0',padding:16,borderRadius:12,marginTop:20,fontSize:12}}>{msg}</pre>
     </div>
-  </div> 
-);
-    <div style={{marginTop:16,fontSize:14}}>
-      <div><b>Wallet:</b> {address || 'no creada'}</div>
-      <div><b>Estado:</b> {locked ? 'bloqueada' : (address ? 'desbloqueada' : '—')}</div>
-      <div><b>Allowance actual:</b> {allowance}</div>
-    </div>
-
-    <hr style={{margin:'24px 0'}}/>
-
-    <div style={{display:'grid',gap:12}}>
-      <input placeholder="Destino (base58)" value={to} onChange={e=>setTo(e.target.value)} style={{padding:10,borderRadius:10,border:'1px solid #ddd'}}/>
-      <input placeholder="Monto USDT (ej. 25.50)" value={amount} onChange={e=>setAmount(e.target.value)} style={{padding:10,borderRadius:10,border:'1px solid #ddd'}}/>
-      <button onClick={sendGasless} disabled={!address||locked} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Enviar USDT (Gas-Free)</button>
-    <details style={{marginTop:16}}>
-  <summary><b>Respaldo de la wallet</b></summary>
-  <div style={{display:'flex', gap:8, marginTop:8, flexWrap:'wrap'}}>
-    <button onClick={mostrarPK} style={{padding:'8px 12px',borderRadius:8,border:'1px solid #ddd'}}>Mostrar clave privada</button>
-    <button onClick={descargarRespaldo} style={{padding:'8px 12px',borderRadius:8,border:'1px solid #ddd'}}>Descargar respaldo cifrado (.json)</button>
-  </div>
-  <p style={{fontSize:12,opacity:0.8,marginTop:8}}>Guárdalo en un lugar seguro. Con la clave privada cualquiera puede mover tus fondos.</p>
-</details>
-
-
-    <pre style={{background:'#0f172a',color:'#e2e8f0',padding:16,borderRadius:12,marginTop:20,fontSize:12}}>{msg}</pre>
-  </div>);
+  );
 }
