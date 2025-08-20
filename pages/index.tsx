@@ -80,7 +80,8 @@ export default function Home(){
       {locked && <button onClick={desbloquear} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Desbloquear</button>}
       <button onClick={borrar} style={{padding:'10px 16px',borderRadius:10,border:'1px solid #ddd'}}>Borrar Wallet</button>
     </div>
-
+  </div> 
+);
     <div style={{marginTop:16,fontSize:14}}>
       <div><b>Wallet:</b> {address || 'no creada'}</div>
       <div><b>Estado:</b> {locked ? 'bloqueada' : (address ? 'desbloqueada' : '—')}</div>
