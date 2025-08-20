@@ -123,7 +123,7 @@ export default function Home(){
       <div><b>Wallet:</b> {address || '—'}</div>
       <div><b>Estado:</b> {locked ? 'bloqueada' : 'desbloqueada'}</div>
       <div><b>Saldo USDT:</b> {balance}</div>
-      <div><b>Allowance actual:</b> {allowance}</div>
+      
     </div>
 
     <hr style={{margin:'24px 0'}}/>
