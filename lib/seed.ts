@@ -1,19 +1,19 @@
-import * as bip39 from 'bip39';
-import * as bip32 from 'bip32';
+import { utils } from 'ethers';
 
-export async function generateSeedWords(): Promise<string> {
-  const mn = bip39.generateMnemonic(128); // 12 palabras
-  return mn;
+/** Genera 12 palabras (BIP39) usando ethers */
+export function generateSeedWords(): string {
+  const entropy = utils.randomBytes(16); // 128 bits -> 12 palabras
+  return utils.entropyToMnemonic(entropy);
 }
 
-export async function deriveTronPrivateKeyFromSeed(mnemonic: string): Promise<string> {
-  const seed = await bip39.mnemonicToSeed(mnemonic);
-  const node = bip32.fromSeed(seed);
-  // TRON coin type 195 -> m/44'/195'/0'/0/0
-  const child = node.derivePath("m/44'/195'/0'/0/0");
-  return child.privateKey!.toString('hex');
+/** Deriva la clave privada TRON a partir de la seed (ruta estándar m/44'/195'/0'/0/0) */
+export function deriveTronPrivateKeyFromSeed(mnemonic: string): string {
+  const hd = utils.HDNode.fromMnemonic(mnemonic);
+  const child = hd.derivePath("m/44'/195'/0'/0/0");
+  // Ethers devuelve pk con 0x; TronWeb acepta sin 0x
+  return child.privateKey.replace(/^0x/i, '');
 }
 
 export function validateMnemonic(mn: string): boolean {
-  return bip39.validateMnemonic(mn);
+  return utils.isValidMnemonic(mn);
 }
