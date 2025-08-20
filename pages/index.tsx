@@ -150,7 +150,7 @@ export default function Home() {
 
   return (
     <div style={{ maxWidth: 760, margin: '40px auto', padding: 24, fontFamily: 'ui-sans-serif, system-ui' }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700 }}>TRON Wallet Gas‑Free — USDT</h1>
+      <h1 style={{ fontSize: 28, fontWeight: 700 }}>TRON Wallet Gas-Free — USDT</h1>
       <p style={{ opacity: 0.8 }}>Demostración: delega Energy para approve inicial y luego envía USDT sin TRX usando un relayer.</p>
 
       <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
@@ -176,7 +176,7 @@ export default function Home() {
         <input placeholder="Destino (base58)" value={to} onChange={e => setTo(e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ddd' }} />
         <input placeholder="Monto USDT (ej. 25.50)" value={amount} onChange={e => setAmount(e.target.value)} style={{ padding: 10, borderRadius: 10, border: '1px solid #ddd' }} />
         <button onClick={sendGasless} disabled={!connected} style={{ padding: '10px 16px', borderRadius: 10, border: '1px solid #ddd' }}>
-          Enviar USDT (Gas‑Free)
+          Enviar USDT (Gas-Free)
         </button>
       </div>
 
