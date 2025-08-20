@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
-import { createWallet, getStored, unlock, clearWallet } from '../lib/keystore';
+import { createWallet, getStored, unlock, clearWallet, savePKDirect } from '../lib/keystore';
 import usdtAbi from '../lib/abi/usdt.json';
+import { generateSeedWords, deriveTronPrivateKeyFromSeed, validateMnemonic } from '../lib/seed';
 
 type AppCfg={fullnode:string;soliditynode:string;usdt:string;forwarder:string;flatFeeUSDT:number;chainId:number;};
 
@@ -18,11 +19,30 @@ export default function Home(){
       const c=await fetch('/api/config').then(r=>r.json()); setCfg(c);
       const TW=require('tronweb'); const TronWeb=TW.default||TW;
       let stored=getStored();
-      if(!stored){ const p=prompt('Crea una contraseña para tu wallet:')||''; if(!p){setMsg('Necesitas una contraseña.');return;}
-        stored=await createWallet(p,TronWeb); const pk=await unlock(p); setAddress(stored.addressBase58); setLocked(false);
-        await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({addressBase58:stored.addressBase58})});
-        await autoActivateIfNeeded(new TronWeb({fullHost:c.fullnode,solidityNode:c.soliditynode,privateKey:pk}), stored.addressBase58, c);
-      } else { setAddress(stored.addressBase58); const p=prompt('Contraseña de tu wallet:')||''; const pk=await unlock(p); setLocked(false);
+      if (!stored) {
+  // Generar SEMILLA (12 palabras) compatible con Trust Wallet
+  const wantSeed = confirm('¿Quieres generar una FRASE SEMILLA (12 palabras) compatible con Trust Wallet? (Recomendado)');
+  let privateKeyHex: string = '';
+  if (wantSeed) {
+    const words = await generateSeedWords();
+    alert('Anota tu frase semilla (12 palabras):\n\n' + words + '\n\nGuárdala en un lugar seguro.');
+    privateKeyHex = await deriveTronPrivateKeyFromSeed(words);
+  } else {
+    // fallback: TronWeb genera una PK aleatoria
+    const acct = await TronWeb.utils.accounts.generateAccount();
+    privateKeyHex = acct.privateKey;
+  }
+  const pass = prompt('Crea una contraseña para cifrar tu wallet:') || '';
+  if (!pass) { setMsg('Necesitas una contraseña.'); return; }
+  // Guardar en keystore local
+  const storedTmp = await savePKDirect(pass, privateKeyHex, TronWeb);
+  stored = storedTmp;
+  const pkNow = await unlock(pass);
+  setAddress(stored.addressBase58); setLocked(false);
+  await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({addressBase58:stored.addressBase58})});
+  await autoActivateIfNeeded(new TronWeb({fullHost:c.fullnode,solidityNode:c.soliditynode,privateKey:pkNow}), stored.addressBase58, c);
+} else {
+ setAddress(stored.addressBase58); const p=prompt('Contraseña de tu wallet:')||''; const pk=await unlock(p); setLocked(false);
         await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({addressBase58:stored.addressBase58})});
         await autoActivateIfNeeded(new TronWeb({fullHost:c.fullnode,solidityNode:c.soliditynode,privateKey:pk}), stored.addressBase58, c);
       }

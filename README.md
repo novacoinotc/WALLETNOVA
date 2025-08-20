@@ -24,3 +24,8 @@
 En la pantalla verás:
 - **Mostrar clave privada** (con confirmación)
 - **Descargar respaldo cifrado (.json)** para guardar/recuperar la wallet más adelante.
+
+
+## Frase semilla (Trust Wallet)
+- Al crear la wallet puedes generar **12 palabras** (BIP39) y se deriva la clave TRON en la ruta `m/44'/195'/0'/0/0`.
+- Con esas 12 palabras podrás **importar en Trust Wallet** y ver **la misma dirección**.

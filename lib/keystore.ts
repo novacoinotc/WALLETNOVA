@@ -22,3 +22,9 @@ export async function unlock(password:string):Promise<string>{
   const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct); return new TextDecoder().decode(pt);
 }
 export function clearWallet(){localStorage.removeItem(KEY);}
+
+
+export async function savePKDirect(password:string, privateKeyHex:string, TronWeb:any){
+  // Reutiliza el flujo de savePrivateKey pero con PK determinada
+  return savePrivateKey(password, privateKeyHex, TronWeb);
+}
