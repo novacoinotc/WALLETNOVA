@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import usdtAbi from '@/lib/abi/usdt.json';
+import usdtAbi from '../lib/abi/usdt.json';
 
 declare global {
   interface Window {

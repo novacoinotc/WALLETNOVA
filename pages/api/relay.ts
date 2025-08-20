@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { tronWeb } from '@/lib/tronweb';
+import { tronWeb } from '../../lib/tronweb';
 
 const FORWARDER = process.env.FORWARDER_ADDRESS as string;
 
