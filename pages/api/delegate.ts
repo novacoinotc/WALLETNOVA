@@ -1,3 +1,4 @@
+export const config = { runtime: 'nodejs' };
 import type {NextApiRequest,NextApiResponse} from 'next';
 import {tronWeb} from '../../lib/tronweb';
 export default async function handler(req:NextApiRequest,res:NextApiResponse){

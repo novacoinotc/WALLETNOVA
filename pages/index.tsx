@@ -1,3 +1,4 @@
+"use client";
 
 import {useEffect,useMemo,useState} from 'react';
 import {createWallet,getStored,unlock,clearWallet} from '../lib/keystore';
